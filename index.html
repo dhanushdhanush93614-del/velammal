@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Velammal Engineering College - Home Automation</title>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:"Segoe UI",Arial;
+background:#f2f6fb;
+text-align:center;
+}
+
+/* HEADER */
+
+.header{
+background:#0a2a66;
+color:white;
+padding:25px;
+font-size:28px;
+font-weight:bold;
+letter-spacing:1px;
+box-shadow:0px 3px 10px rgba(0,0,0,0.2);
+}
+
+/* SUBTITLE */
+
+.subtitle{
+margin-top:10px;
+color:#444;
+font-size:20px;
+}
+
+/* GRID */
+
+.container{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:30px;
+
+padding:60px;
+max-width:900px;
+margin:auto;
+
+}
+
+/* CARD */
+
+.card{
+
+background:white;
+padding:40px;
+border-radius:15px;
+box-shadow:0px 8px 20px rgba(0,0,0,0.08);
+transition:0.3s;
+
+}
+
+.card:hover{
+
+transform:translateY(-5px);
+
+}
+
+/* BUTTON */
+
+button{
+
+width:150px;
+height:60px;
+
+font-size:18px;
+font-weight:bold;
+
+border:none;
+border-radius:10px;
+
+cursor:pointer;
+
+transition:0.3s;
+
+}
+
+/* ON OFF COLORS */
+
+.on{
+
+background:#2ecc71;
+color:white;
+
+}
+
+.off{
+
+background:#e74c3c;
+color:white;
+
+}
+
+/* FOOTER */
+
+.footer{
+
+margin-top:40px;
+color:#666;
+font-size:14px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+VELAMMAL ENGINEERING COLLEGE
+</div>
+
+<div class="subtitle">
+Home Automation Control Panel
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>Relay 1</h3>
+<button id="b1" class="off">OFF</button>
+</div>
+
+<div class="card">
+<h3>Relay 2</h3>
+<button id="b2" class="off">OFF</button>
+</div>
+
+<div class="card">
+<h3>Relay 3</h3>
+<button id="b3" class="off">OFF</button>
+</div>
+
+<div class="card">
+<h3>Relay 4</h3>
+<button id="b4" class="off">OFF</button>
+</div>
+
+</div>
+
+<div class="footer">
+IoT Automation Dashboard
+</div>
+
+<script>
+
+/* MQTT CONFIG */
+
+const options={
+username:"abcd1234",
+password:"abcd1234",
+clientId:"web_"+Math.random()
+}
+
+const client=mqtt.connect("wss://u660b616.ala.eu-central-1.emqxsl.com:8084/mqtt",options)
+
+/* CONNECT */
+
+client.on("connect",()=>{
+
+console.log("MQTT Connected")
+
+client.subscribe("homes/#")
+
+})
+
+/* TOGGLE FUNCTION */
+
+function toggle(topic,state){
+
+client.publish(topic,state=="ON"?"OFF":"ON")
+
+}
+
+/* BUTTON STATE */
+
+function setBtn(btn,state){
+
+if(state=="ON"){
+
+btn.classList.remove("off")
+btn.classList.add("on")
+
+btn.innerHTML="ON"
+
+}
+
+else{
+
+btn.classList.remove("on")
+btn.classList.add("off")
+
+btn.innerHTML="OFF"
+
+}
+
+btn.dataset.state=state
+
+}
+
+/* BUTTON REFERENCES */
+
+const b1=document.getElementById("b1")
+const b2=document.getElementById("b2")
+const b3=document.getElementById("b3")
+const b4=document.getElementById("b4")
+
+b1.dataset.state="OFF"
+b2.dataset.state="OFF"
+b3.dataset.state="OFF"
+b4.dataset.state="OFF"
+
+/* BUTTON EVENTS */
+
+b1.onclick=()=>toggle("homes/r1",b1.dataset.state)
+b2.onclick=()=>toggle("homes/r2",b2.dataset.state)
+b3.onclick=()=>toggle("homes/r3",b3.dataset.state)
+b4.onclick=()=>toggle("homes/r4",b4.dataset.state)
+
+/* MQTT MESSAGE */
+
+client.on("message",(topic,msg)=>{
+
+msg=msg.toString()
+
+if(topic=="homes/r1") setBtn(b1,msg)
+if(topic=="homes/r2") setBtn(b2,msg)
+if(topic=="homes/r3") setBtn(b3,msg)
+if(topic=="homes/r4") setBtn(b4,msg)
+
+})
+
+</script>
+
+</body>
+</html>
